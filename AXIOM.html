@@ -868,6 +868,20 @@ html.acc-lt .sendsq .i{fill:#111}
 .hba{display:flex;gap:8px}
 .hbar .gh{background:transparent;color:var(--txt);border:1px solid var(--line)}
 #listscr .hg{margin:10px 2px 0}
+/* estudos em tela cheia */
+#estscr.fv:not([hidden]){position:fixed;inset:0;left:0;right:0;max-width:none;margin:0;padding:0;z-index:40;display:block;overflow:hidden;background:var(--bg)}
+#estscr.fv .eh{display:none}
+#estscr.fv #elink{position:absolute;inset:0;display:block;margin:0;padding:0}
+#estscr.fv #el-fr{position:absolute;left:0;right:0;top:env(safe-area-inset-top,0px);bottom:env(safe-area-inset-bottom,0px);width:100%;height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));margin:0;border:0;border-radius:0;background:#fff}
+.efb{position:absolute;z-index:2;top:calc(env(safe-area-inset-top,0px) + 8px);width:38px;height:38px;border-radius:50%;background:rgba(18,18,20,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);color:#fff;display:grid;place-items:center;opacity:.8}
+.efb:active{opacity:1}
+.efb .i{width:20px;height:20px;color:#fff}
+#el-x{left:8px}
+#el-m{right:8px}
+.efm{position:absolute;z-index:3;right:8px;top:calc(env(safe-area-inset-top,0px) + 54px);background:var(--card);border:1px solid var(--line);border-radius:12px;display:grid;box-shadow:0 8px 28px rgba(0,0,0,.45);overflow:hidden}
+.efm[hidden]{display:none}
+.efm button{padding:13px 20px;text-align:left;font-size:15px;color:var(--txt)}
+.efm button+button{border-top:1px solid var(--line)}
 
 </style>
 <script>try{var c=JSON.parse(localStorage.getItem('axiom.cfg')||'{}').accent;if(/^#[0-9a-f]{6}$/i.test(c))document.documentElement.style.setProperty('--red',c)}catch(e){}</script>
@@ -1367,7 +1381,7 @@ function box(){if(busy){msg('Aguarde a resposta ou toque em Parar');return}var v
 function closeChat(){speakStop();$('chatscr').hidden=true;$('mm').hidden=true;draw()}
 function leave(){if(history.state&&history.state.c)history.back();else closeChat()}
 $('back').addEventListener('click',leave);$('bk').addEventListener('click',leave);
-window.addEventListener('popstate',function(){if(!$('chatscr').hidden)closeChat()});
+window.addEventListener('popstate',function(){if(!$('chatscr').hidden)closeChat();if(!$('estscr').hidden)$('estscr').hidden=true});
 $('histbtn').addEventListener('click',function(){$('chatscr').hidden=true;go(1)});
 document.querySelectorAll('[data-chip]').forEach(function(b){b.addEventListener('click',function(){$('ci').value=b.dataset.chip;grow();$('ci').focus()})});
 $('cf').addEventListener('submit',function(e){e.preventDefault();box()});
@@ -1377,8 +1391,8 @@ function ask(p){openChat(null);$('ci').value=p;grow();$('ci').focus()}
 document.addEventListener('click',function(e){var q=e.target.closest('[data-q]'),l=e.target.closest('[data-lk]');
 if(q){ask(q.dataset.q);return}
 if(l){var u=ld('axiom.estudos','');if(u)openLink(u);else ask(l.dataset.p||'')}});
-document.querySelectorAll('[data-est]').forEach(function(b){b.addEventListener('click',function(){$('listscr').hidden=true;$('ferscr').hidden=true;$('profscr').hidden=true;$('estscr').hidden=false;estv()})});
-$('ebk').addEventListener('click',function(){$('estscr').hidden=true});
+document.querySelectorAll('[data-est]').forEach(function(b){b.addEventListener('click',function(){$('listscr').hidden=true;$('ferscr').hidden=true;$('profscr').hidden=true;$('estscr').hidden=false;estv();if(ld('axiom.estudos','')){try{history.pushState({e:1},'')}catch(e){}}})});
+$('ebk').addEventListener('click',function(){leaveEst()});
 var PF=ld('axiom.perfil',{n:'Axiom User',e:'usuario@axiom.ai'});
 function prof(){var days=ld('axiom.days',[]),t=new Date().toISOString().slice(0,10),ms=0;if(days.indexOf(t)<0){days.push(t);sv('axiom.days',days)}
 chats.forEach(function(c){c.m.forEach(function(m){if(m.r=='u')ms++})});
@@ -1607,9 +1621,10 @@ $('pfmore').addEventListener('click',function(){$('pfmenu').hidden=!$('pfmenu').
 $('pfmenu').addEventListener('click',function(){$('pfmenu').hidden=true});
 function nu(v){v=(v||'').trim();return v&&!/^https?:\/\//i.test(v)?'https://'+v:v}
 function openLink(u){var w=null;try{w=window.open(u,'_blank')}catch(e){}if(!w)location.href=u}
-function estv(){var u=ld('axiom.estudos','');$('estscr').classList.toggle('fv',!!u);$('elink').innerHTML=u?'<div class="elb"><button class="btn ghost" id="el-open" type="button">Abrir em outra aba</button><button class="btn ghost" id="el-chg" type="button">Trocar link</button></div><iframe id="el-fr" src="'+esc(u)+'" title="App de estudos" allow="clipboard-write"></iframe><p class="hint eh2">Tela em branco? Use “Abrir em outra aba”.</p>':'<div class="elc"><strong>Coloque o link do seu app de estudos</strong><small>Ele vai aparecer aqui dentro.</small><input id="el-i" placeholder="https://seu-app-de-estudos..." inputmode="url" autocapitalize="off" autocomplete="off"><button class="btn" id="el-save" type="button">Conectar</button></div>'}
-function elsave(){var v=nu($('el-i').value);if(!v)return;sv('axiom.estudos',v);estv()}
-$('elink').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;if(b.id=='el-save')elsave();if(b.id=='el-open')openLink(ld('axiom.estudos',''));if(b.id=='el-chg'){var o=ld('axiom.estudos','');sv('axiom.estudos','');estv();$('el-i').value=o}});
+function estv(){var u=ld('axiom.estudos','');$('estscr').classList.toggle('fv',!!u);$('elink').innerHTML=u?'<iframe id="el-fr" src="'+esc(u)+'" title="App de estudos" allow="clipboard-write; fullscreen; microphone; camera"></iframe><button class="efb" id="el-x" type="button" aria-label="Fechar">'+IC('x')+'</button><button class="efb" id="el-m" type="button" aria-label="Opções">'+IC('dots')+'</button><div class="efm" id="el-menu" hidden><button type="button" id="el-open">Abrir em outra aba</button><button type="button" id="el-chg">Trocar link</button></div>':'<div class="elc"><strong>Coloque o link do seu app de estudos</strong><small>Ele vai aparecer aqui dentro, em tela cheia.</small><input id="el-i" placeholder="https://seu-app-de-estudos..." inputmode="url" autocapitalize="off" autocomplete="off"><button class="btn" id="el-save" type="button">Conectar</button></div>'}
+function leaveEst(){if(history.state&&history.state.e)history.back();else $('estscr').hidden=true}
+function elsave(){var v=nu($('el-i').value);if(!v)return;sv('axiom.estudos',v);estv();if(!(history.state&&history.state.e)){try{history.pushState({e:1},'')}catch(e){}}}
+$('elink').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;if(b.id=='el-save')elsave();if(b.id=='el-x'){leaveEst();return}if(b.id=='el-m'){$('el-menu').hidden=!$('el-menu').hidden;return}if(b.id=='el-open'){$('el-menu').hidden=true;openLink(ld('axiom.estudos',''))}if(b.id=='el-chg'){var o=ld('axiom.estudos','');sv('axiom.estudos','');estv();$('el-i').value=o}});
 $('elink').addEventListener('keydown',function(e){if(e.key=='Enter'&&e.target.id=='el-i'){e.preventDefault();elsave()}});
 var NT=ld('axiom.notes',[]),ntc=null,TOOL='',FO={m:25,left:1500,run:false,end:0,iv:null},AV=4;
 var TL={notes:['doc','Anotações','Seu bloco de notas'],todo:['plan','Lista de tarefas','O que falta fazer'],focus:['clock','Foco','Pomodoro'],avg:['calc','Calculadora de média','Quanto falta para passar'],pwd:['lock','Gerador de senhas','Aleatórias e seguras']};
@@ -1708,6 +1723,7 @@ if(!$('cfm').hidden){$('cfm-n').click();return}
 if(!$('rnm').hidden){rnClose();return}
 if(!$('ras').hidden){$('ras').click();return}
 if(!$('cpk').hidden){$('cp-n').click();return}
+if(!$('estscr').hidden&&$('estscr').classList.contains('fv')){leaveEst();return}
 if(hsel&&!$('listscr').hidden){hoff();return}
 if(busy&&!$('chatscr').hidden){stopGen();return}
 var mn=[].slice.call(document.querySelectorAll('.hmn,.mm')).filter(function(x){return!x.hidden});
